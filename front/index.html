@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-br">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Chat Local</title>
+<style>
+  :root{color-scheme:light dark}
+  body{font-family:system-ui,Arial,sans-serif;max-width:800px;margin:32px auto;padding:0 16px}
+  h1{margin:.2rem 0 1rem}
+  #nameBox{display:flex;gap:8px;margin:12px 0}
+  input,button{padding:10px;border:1px solid #ccc;border-radius:10px}
+  #chat{border:1px solid #ddd;border-radius:12px;min-height:320px;max-height:60vh;overflow:auto;padding:12px;background:#fafafa22}
+  .msg{padding:8px 10px;border:1px solid #ddd;border-radius:10px;margin:8px 0}
+  .me{background:#d0f0ff55}
+  .meta{font-size:.8rem;opacity:.7}
+  #sendRow{display:flex;gap:8px;margin-top:10px}
+  #text{flex:1}
+</style>
+
+<h1>💬 Chat</h1>
+
+<div id="nameBox">
+  <input id="name" placeholder="Seu nome" />
+  <button id="saveName">Entrar</button>
+</div>
+
+<div id="chat"></div>
+
+<div id="sendRow">
+  <input id="text" placeholder="Escreva sua mensagem" />
+  <button id="send">Enviar</button>
+</div>
+
+<script>
+const API = {
+  async list(sinceId) {
+    const url = sinceId ? `/api/messages?since_id=${sinceId}` : '/api/messages';
+    const r = await fetch(url);
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async send(author, text) {
+    const r = await fetch('/api/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({author, text})
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+};
+
+const nameInput = document.getElementById('name');
+const saveNameBtn = document.getElementById('saveName');
+const chatEl = document.getElementById('chat');
+const textInput = document.getElementById('text');
+const sendBtn = document.getElementById('send');
+
+function getUser(){
+  return localStorage.getItem('chat_user') || '';
+}
+function setUser(n){
+  localStorage.setItem('chat_user', n);
+}
+
+function renderMessage(m){
+  const me = (m.author === getUser());
+  const div = document.createElement('div');
+  div.className = 'msg'+(me?' me':'');
+  const when = new Date(m.created_at || Date.now()).toLocaleString();
+  div.innerHTML = `<div><b>${m.author}</b></div><div>${m.text}</div><div class="meta">${when} • #${m.id}</div>`;
+  chatEl.appendChild(div);
+}
+
+let lastId = 0;
+async function loadLoop(){
+  try{
+    const msgs = await API.list(lastId);
+    if(msgs.length){
+      msgs.forEach(m => { renderMessage(m); lastId = Math.max(lastId, m.id); });
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+  }catch(e){}
+  setTimeout(loadLoop, 1500);
+}
+
+saveNameBtn.onclick = ()=>{
+  const n = nameInput.value.trim();
+  if(!n){ alert('Digite seu nome para entrar.'); return; }
+  setUser(n);
+  nameInput.disabled = true;
+  saveNameBtn.disabled = true;
+  textInput.focus();
+};
+
+sendBtn.onclick = async ()=>{
+  const user = getUser();
+  if(!user){ alert('Defina seu nome antes de enviar.'); return; }
+  const t = textInput.value.trim();
+  if(!t) return;
+  try {
+    await API.send(user, t);
+    textInput.value = '';
+  } catch(e){
+    alert('Erro ao enviar: ' + e.message);
+  }
+};
+
+window.addEventListener('keydown', e=>{
+  if(e.key === 'Enter' && document.activeElement === textInput){
+    sendBtn.click();
+  }
+});
+
+(function bootstrap(){
+  const u = getUser();
+  if(u){
+    nameInput.value = u;
+    nameInput.disabled = true;
+    saveNameBtn.disabled = true;
+  }
+  loadLoop();
+})();
+</script>
+</html>
