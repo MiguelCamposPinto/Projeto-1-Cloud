@@ -9,7 +9,6 @@ DB_PATH = APP_DIR / "chat.db"
 
 app = Flask(__name__, static_folder=None)
 
-# ---------- DB ----------
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -31,7 +30,6 @@ def init_db():
 
 init_db()
 
-# ---------- API ----------
 @app.get("/health")
 def health():
     return jsonify(
