@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory, abort
-import sqlite3, os
+import mysql.connector, os
 from datetime import datetime
 from pathlib import Path
+from mysql_connector import get_connection
 
 APP_DIR = Path(__file__).resolve().parent
 FRONT_DIR = (APP_DIR / ".." / "front").resolve()
@@ -10,17 +11,20 @@ DB_PATH = APP_DIR / "chat.db"
 app = Flask(__name__, static_folder=None)
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return get_connection()
 
 def init_db():
     conn = get_db()
+    if(conn.is_connected()):
+        print("Conectado!")
+    else:
+        print("Erro ao conectar ao DB!")
+        
     cur = conn.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            author TEXT NOT NULL,
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            author VARCHAR(255) NOT NULL,
             text   TEXT NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
@@ -45,7 +49,7 @@ def list_messages():
     if since_id is None:
         cur.execute("SELECT id, author, text, created_at FROM messages ORDER BY id ASC")
     else:
-        cur.execute("SELECT id, author, text, created_at FROM messages WHERE id > ? ORDER BY id ASC", (since_id,))
+        cur.execute("SELECT id, author, text, created_at FROM messages WHERE id > %s ORDER BY id ASC", (since_id,))
     rows = [dict(id=r[0], author=r[1], text=r[2], created_at=r[3]) for r in cur.fetchall()]
     cur.close(); conn.close()
     return jsonify(rows)
@@ -58,7 +62,7 @@ def post_message():
     if not author or not text:
         return jsonify(error="author and text required"), 400
     conn = get_db(); cur = conn.cursor()
-    cur.execute("INSERT INTO messages(author, text) VALUES(?, ?)", (author, text))
+    cur.execute("INSERT INTO messages(author, text) VALUES(%s, %s)", (author, text))
     conn.commit()
     new_id = cur.lastrowid
     cur.close(); conn.close()
@@ -82,4 +86,4 @@ def front_assets(filename):
 
 if __name__ == "__main__":
     app.logger.info("FRONT_DIR: %s", FRONT_DIR)
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=8085, debug=False)
