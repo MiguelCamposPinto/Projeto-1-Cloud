@@ -13,6 +13,8 @@ app = Flask(__name__, static_folder=None)
 def get_db():
     return get_connection()
 
+#1- teste unitario
+# verificar se o db ta iniciando corretamente
 def init_db():
     conn = get_db()
     if(conn.is_connected()):
@@ -42,6 +44,8 @@ def health():
         index_exists=(FRONT_DIR / "index.html").exists()
     )
 
+#2- test unit
+# colocar mensagem no banco de dados e ver se estáretornando  corretamente.
 @app.get("/api/messages")
 def list_messages():
     since_id = request.args.get("since_id", type=int)
@@ -54,6 +58,9 @@ def list_messages():
     cur.close(); conn.close()
     return jsonify(rows)
 
+#3- test unit
+# mandar mensagem no formato valido e verificar no bd pra ver se a mensagem foi subida corretamente
+#4- mandar uma query no formato errado para ver se o banco da erro( erro esperado)
 @app.post("/api/messages")
 def post_message():
     data = request.get_json(silent=True) or {}
@@ -76,6 +83,8 @@ def index():
         abort(404)
     return send_from_directory(FRONT_DIR, "index.html")
 
+#5- mandar um path certo para verificar se a resposta vem certo
+#6- mandar um path errado para verificar se da erro 
 @app.get("/front/<path:filename>")
 def front_assets(filename):
     file_path = FRONT_DIR / filename
