@@ -1,11 +1,11 @@
+import os
 import mysql.connector
 
-#7 - test unit
-# ver se ao mudar esses dados se o bd nega conexao
 def get_connection():
     return mysql.connector.connect(
-        host="192.168.80.130",
-        user="enzo",
-        password="1234",
-        database="appdb"
+        host=os.environ.get("DB_HOST", "127.0.0.1"),
+        user=os.environ.get("DB_USER", "root"),
+        password=os.environ.get("DB_PASS", "rootpass"),
+        database=os.environ.get("DB_NAME", "appdb"),
+        autocommit=True
     )

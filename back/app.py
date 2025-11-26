@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory, abort
 import mysql.connector, os
 from datetime import datetime
 from pathlib import Path
-from mysql_connector import get_connection
+from back.mysql_connector import get_connection
 
 APP_DIR = Path(__file__).resolve().parent
 FRONT_DIR = (APP_DIR / ".." / "front").resolve()
