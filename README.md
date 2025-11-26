@@ -11,7 +11,7 @@
 
 > 2º
 ```
-pip install -r requirements.txt 
+pip install -r back/requirements.txt 
 ```
 
 > 3º
