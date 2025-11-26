@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, abort
 import mysql.connector, os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from back.mysql_connector import get_connection
 
@@ -73,7 +73,7 @@ def post_message():
     conn.commit()
     new_id = cur.lastrowid
     cur.close(); conn.close()
-    return jsonify(id=new_id, author=author, text=text, created_at=datetime.utcnow().isoformat()+"Z"), 201
+    return jsonify(id=new_id, author=author, text=text, created_at=datetime.now(timezone.utc).isoformat()), 201
 
 @app.get("/")
 def index():
