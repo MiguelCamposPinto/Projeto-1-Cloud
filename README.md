@@ -1,5 +1,10 @@
-# 1) Iniciar o ambiente virtual:
-> 1º
+# Guia de Execução do Projeto
+Aqui será descrito como configurar o ambiente, iniciar a aplicação Flask integrada ao MySQL e executar os testes unitários e de integração exigidos
+
+</br>
+
+# 1) Preparar o Ambiente Virtual:
+### 1. Criar o ambiente virtual. Utilize o seguinte comando
 ```
  py -m venv venv 
 ```
@@ -9,19 +14,16 @@
 
 ```
 
-> 2º
+### 2. - Instalar as dependências
 ```
 pip install -r back/requirements.txt 
 ```
 
-> 3º
+### 3. - Ativar o ambiente
 
 ``` 
  .\venv\Scripts\Activate.ps1  
 ```
-</br>
-
-
 
 ---
 ---
@@ -29,15 +31,15 @@ pip install -r back/requirements.txt
 
 </br>
 
-# 2) 1º terminal.
-    Rodar esses comandos para iniciar a aplicação e e o conteiner docker com o mysql:
+# 2) Subir MySQL + Inicializar Banco + Rodar Aplicação
+Todas as etapas abaixo devem ser executadas no **1º terminal**, com o ambiente virtual ativado.
 
-> 1º Inicia o conteiner docker com mysql na porta 3306.
+### 1. Inicia o conteiner docker com mysql na porta 3306.
 ```
 docker run -e MYSQL_ROOT_PASSWORD=rootpass -e MYSQL_DATABASE=appdb -p 3306:3306 -d mysql:5.7
 ```
 
-> 2º Define as variaveis de ambiente e inicializa o schema no DB
+### 2. Exportar variáveis de ambiente e inicializar o schema:
 ```
 $env:DB_HOST = "127.0.0.1"
 $env:DB_USER = "root"
@@ -47,46 +49,59 @@ $env:DB_NAME = "appdb"
 python back/scripts/init_db.py
 ```
 
-> 3º Inicia o server da aplicação na porta 8085.
+### 3. Iniciar o servidor Flask (porta 8085):
 ```
 cd back/
 flask run --host=0.0.0.0 --port=8085
 ```
+A API estará disponível em:
 
-</br>
-
-
-
----
----
-
-
-</br>
-
-# 3) 2º terminal(aberto simultaneo ao primeiro).
-    OBS: Se ainda não estiver dentro do ambiente virtual, entrar! (passo 1)
-    Rodar os testes:
-
-- Testes Unitarios:
-```
-pytest back/tests/unit
-```
-
-- Testes de Integração:
-```
-pytest back/tests/integration
-```
-
-
-</br>
-
-
+👉 http://localhost:8085
 
 ---
 ---
 
+</br>
+
+# 3) Executar os Testes (Unitários e Integração)
+Os testes devem ser executados em um **2º terminal** simultâneo ao primeiro, com o ambiente virtual também ativado.
+
+### Ativar ambiente virtual (caso não esteja ativo):
+```
+.\venv\Scripts\Activate.ps1
+```
+
+### ✔ Testes Unitários:
+```
+pytest back/tests/unit/
+```
+
+### ✔ Testes de Integração:
+```
+pytest back/tests/integration/
+```
+### ✔ Rodar todos os testes:
+```
+pytest
+```
+
+---
+---
 
 </br>
 
-* Obs: Ao fazer o commit os testes de CI ja rodam automaticamente no workflow do github.
-        Pode ser visualizado na aba "Actions" na pagina do projeto.
+
+# 4) Pipeline Automático no GitHub
+Sempre que um **commit** ou **pull request** é feito para a branch `main`,
+o workflow do GitHub Actions é acionado automaticamente:
+
+- Sobe container MySQL  
+- Instala dependências  
+- Inicializa o banco  
+- Executa todos os testes  
+
+Você pode acompanhar os resultados em:
+
+👉 Aba “Actions” no GitHub do projeto
+
+--- 
