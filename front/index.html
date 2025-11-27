@@ -67,6 +67,8 @@ function setUser(n){
   localStorage.setItem('chat_user', n);
 }
 
+
+
 function renderMessage(m){
   const me = (m.author === getUser());
   const div = document.createElement('div');
@@ -109,7 +111,9 @@ clearChatBtn.onclick = () => {
   const cutoff = lastId || 0;
   localStorage.setItem("clear_until_id", cutoff);
   chatEl.innerHTML = "";
+  lastId = cutoff;
 };
+
 
 
 saveNameBtn.onclick = ()=>{

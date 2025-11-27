@@ -1,0 +1,15 @@
+{
+  "name": "projeto-1-cloud",
+  "version": "1.0.0",
+  "description": "Aqui será descrito como configurar o ambiente, iniciar a aplicação Flask integrada ao MySQL e executar os testes unitários e de integração exigidos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^15.7.0"
+  }
+}
