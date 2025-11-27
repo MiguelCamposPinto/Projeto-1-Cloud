@@ -1,29 +1,5 @@
-import pytest
-from back.app import app
-from back.mysql_connector import get_connection
-
-
-@pytest.fixture(scope="function", autouse=True)
-def clean_db():
-    """
-    Limpa a tabela messages antes de cada teste de integração.
-    Integração aqui = app Flask + MySQL real.
-    """
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM messages")
-    conn.commit()
-    cur.close()
-    conn.close()
-    yield
-
-
-@pytest.fixture
-def client():
-    app.config["TESTING"] = True
-    with app.test_client() as c:
-        yield c
-
+from sharedScope import *
+from datetime import datetime
 
 # 1) /health integrado com app e filesystem (FRONT_DIR/index.html)
 def test_integration_health_endpoint(client):
@@ -61,3 +37,33 @@ def test_integration_validation_error(client):
     data = r.get_json()
     assert "error" in data
     assert "author and text required" in data["error"]
+
+# 4) GET "/" serve index.html corretamente
+def test_integration_root_serves_index_html(client, monkeypatch, tmp_path):
+    #cria um front falso temporário
+    front_fake = tmp_path
+    fake_index = front_fake / "index.html"
+    fake_index.write_text("<html><body>Fake Index</body></html>")
+
+    #substitui front_dir dentro do app.py para apontar para o front falso
+    monkeypatch.setattr("back.app.FRONT_DIR", front_fake)
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert b"Fake Index" in resp.data
+
+# 5) GET /api/messages
+def test_integration_created_at_from_database(client):
+    #cria uma mensagem (escreve no bd)
+    r = client.post("/api/messages", json = {"author": "db", "text": "test"})
+    assert r.status_code == 201
+
+    #pega mensagem via GET method
+    resp = client.get("/api/messages")
+    assert resp.status_code == 200
+    msgs = resp.get_json()
+
+    assert len(msgs) == 1
+    created_at = msgs[0]["created_at"]
+
+    dt = datetime.fromisoformat(created_at)
+    assert isinstance(dt, datetime)

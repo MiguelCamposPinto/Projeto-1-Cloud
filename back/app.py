@@ -54,7 +54,17 @@ def list_messages():
         cur.execute("SELECT id, author, text, created_at FROM messages ORDER BY id ASC")
     else:
         cur.execute("SELECT id, author, text, created_at FROM messages WHERE id > %s ORDER BY id ASC", (since_id,))
-    rows = [dict(id=r[0], author=r[1], text=r[2], created_at=r[3]) for r in cur.fetchall()]
+    rows = [] 
+    for r in cur.fetchall():
+        created = r[3]
+        if hasattr(created, "tzinfo") and created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        rows.append({
+            "id": r[0],
+            "author": r[1],
+            "text": r[2],
+            "created_at": created.isoformat()
+        })
     cur.close(); conn.close()
     return jsonify(rows)
 
