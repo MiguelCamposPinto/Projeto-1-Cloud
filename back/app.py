@@ -103,6 +103,22 @@ def front_assets(filename):
         abort(404)
     return send_from_directory(FRONT_DIR, filename)
 
+@app.delete("/api/messages/<int:msg_id>")
+def delete_message(msg_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM messages WHERE id = %s", (msg_id,))
+    if cur.rowcount == 0:
+        cur.close()
+        conn.close()
+        return jsonify(error="Message not found"), 404
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify(ok=True), 200
+
+
 if __name__ == "__main__":
     app.logger.info("FRONT_DIR: %s", FRONT_DIR)
     app.run(host="0.0.0.0", port=8085, debug=False)

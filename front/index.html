@@ -24,6 +24,9 @@
   <button id="saveName">Entrar</button>
 </div>
 
+<!-- 🔥 BOTÃO DE LIMPAR CHAT -->
+<button id="clearChat" style="margin-bottom: 10px;">🧹 Limpar mensagens</button>
+
 <div id="chat"></div>
 
 <div id="sendRow">
@@ -55,6 +58,7 @@ const saveNameBtn = document.getElementById('saveName');
 const chatEl = document.getElementById('chat');
 const textInput = document.getElementById('text');
 const sendBtn = document.getElementById('send');
+const clearChatBtn = document.getElementById("clearChat");
 
 function getUser(){
   return localStorage.getItem('chat_user') || '';
@@ -67,8 +71,13 @@ function renderMessage(m){
   const me = (m.author === getUser());
   const div = document.createElement('div');
   div.className = 'msg'+(me?' me':'');
+
   const when = new Date(m.created_at || Date.now()).toLocaleString();
-  div.innerHTML = `<div><b>${m.author}</b></div><div>${m.text}</div><div class="meta">${when} • #${m.id}</div>`;
+  div.innerHTML = `
+    <div><b>${m.author}</b></div>
+    <div>${m.text}</div>
+    <div class="meta">${when} • #${m.id}</div>
+  `;
   chatEl.appendChild(div);
 }
 
@@ -76,13 +85,32 @@ let lastId = 0;
 async function loadLoop(){
   try{
     const msgs = await API.list(lastId);
-    if(msgs.length){
-      msgs.forEach(m => { renderMessage(m); lastId = Math.max(lastId, m.id); });
+
+    if (msgs.length) {
+      const cutoff = Number(localStorage.getItem("clear_until_id") || 0);
+
+      msgs.forEach(m => {
+        // IGNORA mensagens anteriores ao clear
+        if (m.id <= cutoff) return;
+
+        renderMessage(m);
+        lastId = Math.max(lastId, m.id);
+      });
+
       chatEl.scrollTop = chatEl.scrollHeight;
     }
-  }catch(e){}
+  } catch(e) {}
+
   setTimeout(loadLoop, 1500);
 }
+
+
+clearChatBtn.onclick = () => {
+  const cutoff = lastId || 0;
+  localStorage.setItem("clear_until_id", cutoff);
+  chatEl.innerHTML = "";
+};
+
 
 saveNameBtn.onclick = ()=>{
   const n = nameInput.value.trim();
