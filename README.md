@@ -90,8 +90,45 @@ pytest
 
 </br>
 
+# 4) Executar os Testes End-to-End (E2E) com Cypress
+Os testes End-to-End (E2E) são executados utilizando o Cypress e devem ser rodados em um 3º terminal, enquanto o servidor Flask (back/) e o container MySQL ainda estão ativos.
 
-# 4) Pipeline Automático no GitHub
+Pré-requisitos:
+- O servidor Flask deve estar ativo e rodando na porta 8085 (conforme a Seção 2).
+- O ambiente virtual deve estar ativo neste terminal também.
+
+### 1. Instale o Cypress
+Na raíz do projeto:
+```
+npm init -y
+npm install cypress --save-dev
+```
+### 2. Estrutura de pastas será criada:
+```
+cypress/
+  e2e/
+    chat.cy.js
+```
+### 3. Como rodar
+Execute o comando abaixo para abrir a interface gráfica (GUI) do Cypress. Isso permitirá que você veja os testes sendo executados em tempo real no navegador.
+```
+npx cypress open
+```
+O que esperar: Uma nova janela será aberta. Clique em E2E Testing e, em seguida, em Start E2E Testing in... (escolha o navegador, como Chrome ou Edge). Você verá a lista de seus testes E2E (ex: chat.cy.js). Clique no arquivo para iniciar a execução.
+
+### 4. Executar os testes E2E via CLI (sem interface gráfica)
+Para rodar os testes de forma automatizada e headless (sem abrir o navegador, ideal para CI/CD ou relatórios rápidos):
+```
+npx cypress run 
+```
+O que esperar: O Cypress executará todos os testes E2E no terminal e gerará um relatório de sucesso/falha ao final.
+
+---
+---
+
+</br>
+
+# 5) Pipeline Automático no GitHub
 Sempre que um **commit** ou **pull request** é feito para a branch `main`,
 o workflow do GitHub Actions é acionado automaticamente:
 
